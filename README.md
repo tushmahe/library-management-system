@@ -1,4 +1,4 @@
-### library-management-system
+# library-management-system
 ## Installation
 * Clone the repository
 * Go to Backend direcory

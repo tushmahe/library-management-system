@@ -1,5 +1,5 @@
-## library-management-system
-# Installation
+## Library-management-system
+### Installation
 * Clone the repository
 * Go to Backend direcory
 * Create .env file and copy .env.example in it

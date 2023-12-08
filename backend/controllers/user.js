@@ -10,23 +10,21 @@ exports.signUp = async (req, res) => {
             email,
             password,
             confirmPassword,
-            accountType
+            accountType,
         } = req.body;
-
-        console.log("hello")
 
         if (
             !firstName ||
             !lastName ||
             !email ||
-            !confirmPassword 
+            !confirmPassword
         ) {
             return res.status(400).json({
                 success: false,
                 message: "Please Fill in all the Required Fields to Sign up.",
             });
         }
-        
+
         const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
         if (!emailPattern.test(email)) {
             return res.status(400).json({
@@ -55,17 +53,18 @@ exports.signUp = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const adminUser = await User.find({accountType: 'Admin'})
+        const adminUser = await User.findOne({ accountType: 'Admin' });
 
-        if(accountType==='Admin'&& adminUser){
+        if (accountType === 'Admin' && adminUser) {
             return res.status(403).json({
                 message: 'Admin user already exists',
                 success: false
-            })
+            });
         }
 
-        if(accountType==null){
-            accountType="User"
+
+        if (accountType == null) {
+            accountType = "User"
         }
 
         const user = await User.create({
@@ -92,18 +91,42 @@ exports.signUp = async (req, res) => {
     }
 };
 
+exports.details = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id)
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            })
+        }
+        res.status(200).json({
+            success: true,
+            user
+        })
+    } catch (error) {
+        console.error("Error in details:", error);
+        return res.status(500).json({
+            success: false,
+            message: "User Cannot be Registered. Please Try Again.",
+            error: error.message,
+        });
+    }
+}
+
 
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        //returning error if email or password is missing
         if (!email || !password) {
             return res.status(400).json({
                 success: false,
                 message: "Please Provide Both Email and Password to Login.",
             });
         }
-
+        //returning error if email is not in proper format
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailPattern.test(email)) {
             return res.status(400).json({
@@ -111,7 +134,7 @@ exports.login = async (req, res) => {
                 message: "Invalid Email Format. Please Provide a valid Email Address.",
             });
         }
-
+        //finding user with the provided email
         const user = await User.findOne({ email })
             .populate("reservedBooks")
             .exec();
@@ -122,7 +145,7 @@ exports.login = async (req, res) => {
                 message: "Invalid Credentials. User is not Registered. Please Sign up.",
             });
         }
-
+        //checking if user is already logged in
         if (user.token) {
             return res.status(401).json({
                 success: false,

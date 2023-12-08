@@ -3,7 +3,6 @@ const mongoose = require('mongoose')
 const BookSchema = new mongoose.Schema({
     bookPhoto: {
         type: String,
-        // required: true,      
     },
     bookName: {
         type: String,
@@ -25,9 +24,9 @@ const BookSchema = new mongoose.Schema({
         type: Boolean,
         required: true,
     },
-    category:{
-        type: mongoose.Types.ObjectId,
-        ref: 'Category'
+    category: {
+        type: String,
+        required: true,
     },
     availableCopies: {
         type: Number,

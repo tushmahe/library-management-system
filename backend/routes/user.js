@@ -8,6 +8,6 @@ router.post('/signup', signUp);
 router.post('/signin', login);
 
 //Admin Routes
-router.post('/deleteUser/:id',auth,isAdmin,)
+router.post('/deleteUser/:id', auth, isAdmin,)
 
 module.exports = router;

@@ -5,6 +5,7 @@ const AdminLogin = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loginMessage, setLoginMessage] = useState("");
+    
 
     const navigate = useNavigate();
 
@@ -25,10 +26,6 @@ const AdminLogin = () => {
             setLoginMessage("Invalid Credentials");
         });
     };
-    const handleAdminClick = (e) => {
-        e.preventDefault();
-        navigate("/admin");
-    }
     const handleNewUserClick = (e) => {
         e.preventDefault();
         navigate("/signup");

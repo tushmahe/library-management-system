@@ -6,16 +6,13 @@ const Category = require('../models/category.js')
 
 exports.getBook = async (req, res) => {
     try {
-
         const { id } = req.params;
-
         if (!id) {
             return res.status(400).json({
                 message: "Please provide id",
                 success: false
             })
         }
-
         if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send(`No post with id: ${id}`);
 
         const book = await Book.findById(id);
@@ -29,7 +26,8 @@ exports.getBook = async (req, res) => {
 
         return res.status(200).json({
             message: "Book fetched Successfully",
-            success: true
+            success: true,
+            book
         })
 
     } catch (error) {
@@ -43,14 +41,16 @@ exports.getBook = async (req, res) => {
 
 exports.showAllBooks = async (req, res) => {
     try {
-        const books = Book.find({}, {
+        const books = await Book.find({}, {
+            bookPhoto: true,
             bookName: true,
             bookDescription: true,
             publicationYear: true,
             author: true,
             availability: true,
             availableCopies: true,
-        }).populate('category').exec();
+            category: true
+        }).sort({ publicationYear: -1 });
 
         if (!books) {
             return res.status(400).json({
@@ -77,7 +77,7 @@ exports.showAllBooks = async (req, res) => {
 
 exports.createBook = async (req, res) => {
     try {
-        const { bookName, bookDescription, publicationYear, author, availability, availableCopies, categoryId } = req.body;
+        const { bookPhoto, bookName, bookDescription, publicationYear, author, availability, availableCopies, categoryId } = req.body;
 
         if (!bookName || !bookDescription || !publicationYear || !author || !availability || !availableCopies || !categoryId) {
             return res.status(400).json({
@@ -86,7 +86,7 @@ exports.createBook = async (req, res) => {
             })
         }
 
-        const category = await Category.findById(categoryId);
+        const category = await Category.find({ name: categoryId });
 
         if (!category) {
             return res.status(403).json({
@@ -96,17 +96,16 @@ exports.createBook = async (req, res) => {
         }
 
         const bookDetails = await Book.create({
-            bookName, bookDescription, publicationYear, author, availability, availableCopies, categoryId
+            bookPhoto, bookName, bookDescription, publicationYear, author, availability, availableCopies, category: categoryId
         })
 
-        await Category.findByIdAndUpdate({ _id: categoryId }, {
+        await Category.findOneAndUpdate({ name: categoryId }, {
             $push: {
                 books: bookDetails._id
             }
         }, {
             new: true,
         })
-
         return res.status(201).json({
             success: true,
             message: "Book created Successfully",
@@ -125,7 +124,6 @@ exports.createBook = async (req, res) => {
 exports.editBookDetails = async (req, res) => {
     try {
         const { id } = req.params;
-
         const { bookName, bookDescription, publicationYear, author, availability, availableCopies, categoryId } = req.body;
 
         if (!id) {
@@ -135,9 +133,6 @@ exports.editBookDetails = async (req, res) => {
             })
         }
 
-        if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send(`No post with id: ${id}`);
-        if (!mongoose.Types.ObjectId.isValid(categoryId)) return res.status(404).send(`No post with id: ${categoryId}`);
-
         const book = await Book.findById(id);
         if (!book) {
             return res.status(404).json({
@@ -146,7 +141,7 @@ exports.editBookDetails = async (req, res) => {
             })
         }
 
-        const updatedBookDetails = { bookName, bookDescription, publicationYear, author, availability, availableCopies, categoryId }
+        const updatedBookDetails = { bookName, bookDescription, publicationYear, author, availability, availableCopies, category: categoryId }
 
         const updatedBook = await Book.findByIdAndUpdate(id, updatedBookDetails, { new: true });
 
@@ -169,39 +164,38 @@ exports.editBookDetails = async (req, res) => {
 exports.deleteBook = async (req, res) => {
     try {
         const { id } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send(`No post with id: ${id}`);
+        if (!mongoose.isValidObjectId(id)) return res.status(404).send(`No post with id: ${id}`);
 
-        const bookDetails = Book.findById(id);
+        const bookDetails = await Book.findById(id);
         if (!bookDetails) {
             return res.status(404).json({
                 message: "No book details found by given id",
                 success: false,
-            })
+            });
         }
 
-        const updateCategory = await Category.findByIdAndUpdate({ _id: bookDetails.category }, {
-            $pull: { books: mongoose.Types.ObjectId(id) }
-        },)
-
-        if (!updateCategory) {
-            return res.status(403).json({
-                message: 'Couldn\'t update the category',
-                success: false
-            })
-        }
+        const categoryName = bookDetails.category;
 
         await Book.findByIdAndRemove(id);
+
+        const categoryDetails = await Category.findOne({ name: categoryName });
+        if (categoryDetails) {
+            categoryDetails.books = categoryDetails.books.filter((bookID) => bookID != id);
+            await categoryDetails.save();
+        } else {
+            console.log("Category not found for the book");
+        }
 
         return res.status(200).json({
             message: 'Deleted Book Successfully',
             success: true,
-        })
+        });
 
     } catch (error) {
-        console.log('/deletePost', error)
+        console.log('/deletePost', error);
         return res.status(500).json({
             message: 'Something went wrong while deleting details of book',
-            success: false
-        })
+            success: false,
+        });
     }
-}
+};

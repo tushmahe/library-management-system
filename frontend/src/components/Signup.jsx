@@ -9,10 +9,9 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [cnfpassword, setCnfpassword] = useState("");
   const [Error, setError] = useState("");
+  const [accountType, setAccountType] = useState("User")
   let navigate = useNavigate();
 
-  let usernameFlag;
-  let passwordFlag;
   function handleSubmit(e) {
     console.log("inside handle submit");
     e.preventDefault();
@@ -25,17 +24,17 @@ const Signup = () => {
       setError("Password must be atleast 8 characters long");
       return;
     }
-  
+
     //posting the details to the backend
     console.log("posting")
+    console.log("This is the formData", firstName, lastName, email, password, cnfpassword, accountType)
     axios.post("http://localhost:5000/api/v1/auth/signup", {
       firstName: firstName,
       lastName: lastName,
       email: email,
       password: password,
       confirmPassword: cnfpassword,
-      accountType: "User"
-      
+      accountType: accountType
     }).then((res) => {
       console.log(res);
       setError(res.message)
@@ -49,7 +48,7 @@ const Signup = () => {
       }
     });
   }
-  
+
   return (
     <>
       <div className="signup_container">
@@ -61,16 +60,17 @@ const Signup = () => {
             margin: "0 auto",
             textAlign: "center",
             boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
-            padding: "20px",
+            padding: "10px",
             borderRadius: "8px",
           }}
         >
-          <h1 style={{ color: "#333", marginBottom: "20px", fontSize: "24px",fontWeight:"bold " }}>
+          <h1 style={{ color: "#333", marginBottom: "10px", fontSize: "24px", fontWeight: "bold " }}>
             Library Management System
           </h1>
           <label
-            style={{ display: "block", margin: "10px 0", fontSize: "16px" }}
             htmlFor="name"
+            style={{ display: "block", margin: "5px 0", fontSize: "16px" }}
+
           >
             First Name
           </label>
@@ -83,14 +83,15 @@ const Signup = () => {
               width: "100%",
               padding: "10px",
               fontSize: "16px",
-              marginBottom: "20px",
+              marginBottom: "10px",
               borderRadius: "4px",
               border: "1px solid #ccc",
             }}
           />
           <label
-            style={{ display: "block", margin: "10px 0", fontSize: "16px" }}
             htmlFor="name"
+            style={{ display: "block", margin: "5px 0", fontSize: "16px" }}
+
           >
             Last Name
           </label>
@@ -103,15 +104,16 @@ const Signup = () => {
               width: "100%",
               padding: "10px",
               fontSize: "16px",
-              marginBottom: "20px",
+              marginBottom: "10px",
               borderRadius: "4px",
               border: "1px solid #ccc",
             }}
           />
-          
+
           <label
-            style={{ display: "block", margin: "10px 0", fontSize: "16px" }}
             htmlFor="email"
+            style={{ display: "block", margin: "5px 0", fontSize: "16px" }}
+
           >
             E-mail
           </label>
@@ -124,11 +126,40 @@ const Signup = () => {
               width: "100%",
               padding: "10px",
               fontSize: "16px",
-              marginBottom: "20px",
+              marginBottom: "10px",
               borderRadius: "4px",
               border: "1px solid #ccc",
             }}
           />
+          <label htmlFor="accountType" style={{ display: "block", margin: "10px 0", fontSize: "16px" }}>
+            Are you an Admin?
+          </label>
+          <div className="flex justify-evenly">
+            <div className="flex items-center">
+              <input
+                type="radio"
+                name="accountType"
+                value="Admin"
+                checked={accountType === "Admin"}
+                onChange={() => setAccountType("Admin")}
+              />
+              <span style={{ marginRight: "2px" }}>
+                Admin
+              </span>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="radio"
+                name="accountType"
+                value="User"
+                checked={accountType === "User"}
+                onChange={() => setAccountType("User")}
+              />
+              <span>
+                User
+              </span>
+            </div>
+          </div>
           <label
             style={{ display: "block", margin: "10px 0", fontSize: "16px" }}
             htmlFor="password"
@@ -144,7 +175,7 @@ const Signup = () => {
               width: "100%",
               padding: "10px",
               fontSize: "16px",
-              marginBottom: "20px",
+              marginBottom: "10px",
               borderRadius: "4px",
               border: "1px solid #ccc",
             }}
@@ -164,18 +195,18 @@ const Signup = () => {
               width: "100%",
               padding: "10px",
               fontSize: "16px",
-              marginBottom: "20px",
+              marginBottom: "10px",
               borderRadius: "4px",
               border: "1px solid #ccc",
             }}
           />
-          <p style={{color:"red", margin:"10px"}}>{Error}</p>
+          <p style={{ color: "red", margin: "10px" }}>{Error}</p>
           <button
             type="submit"
             style={{
               backgroundColor: "#4CAF50",
               color: "white",
-              padding: "12px 20px",
+              padding: "12px 10px",
               fontSize: "16px",
               borderRadius: "4px",
               cursor: "pointer",

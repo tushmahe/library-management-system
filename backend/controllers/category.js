@@ -32,8 +32,7 @@ exports.createCategory = async (req, res) => {
 exports.getCategory = async (req, res) => {
     try {
         const { id } = req.params;
-
-        if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send(`No post with id: ${id}`);
+        // if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send(`No post with id: ${id}`);
 
         const categoryDetails = await Category.findById(id);
         if (!categoryDetails) {
@@ -42,11 +41,10 @@ exports.getCategory = async (req, res) => {
                 message: "No Category Found"
             });
         }
-
         return res.status(200).json({
             success: true,
             message: "Category details fetched successfully",
-            categoryDetails,
+            Books,
         });
 
     } catch (error) {
@@ -67,7 +65,7 @@ exports.showAllCategories = async (req, res) => {
                 description: true,
                 books: true,
             }
-        );
+        ).sort({ name: 1 });
 
         res.status(200).json({
             success: true,
